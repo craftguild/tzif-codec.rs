@@ -52,7 +52,7 @@ jobs:
       - name: Update version and changelog
         run: release-plz update
 
-      - name: Create release commit and tag
+      - name: Create release commit
         run: |
           if git diff --quiet; then
             echo "No release changes."
@@ -60,17 +60,15 @@ jobs:
           fi
 
           version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "tzif-codec") | .version')"
-          tag="v${version}"
 
           git add Cargo.lock Cargo.toml CHANGELOG.md
-          git commit -m "chore: prepare ${tag} release"
-          git tag -a "${tag}" -m "${tag}"
+          git commit -m "chore: prepare v${version} release"
 
-      - name: Push release commit and tag
+      - name: Push release commit
         run: |
           if git diff --quiet HEAD origin/main; then
             echo "No release commit to push."
             exit 0
           fi
 
-          git push --follow-tags origin main
+          git push origin main
