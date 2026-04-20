@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore: prepare v') }}"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Rust builds
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-bin: true
+
+      - name: Install release-plz
+        run: cargo install release-plz --locked
+
+      - name: Test
+        run: cargo test --all-targets
+
+      - name: Lint
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update version and changelog
+        run: release-plz update
+
+      - name: Create release commit and tag
+        run: |
+          if git diff --quiet; then
+            echo "No release changes."
+            exit 0
+          fi
+
+          version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "tzif-codec") | .version')"
+          tag="v${version}"
+
+          git add Cargo.lock Cargo.toml CHANGELOG.md
+          git commit -m "chore: prepare ${tag} release"
+          git tag -a "${tag}" -m "${tag}"
+
+      - name: Push release commit and tag
+        run: |
+          if git diff --quiet HEAD origin/main; then
+            echo "No release commit to push."
+            exit 0
+          fi
+
+          git push --follow-tags origin main

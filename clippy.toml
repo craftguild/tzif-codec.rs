@@ -1,0 +1,4 @@
+cognitive-complexity-threshold = 10
+too-many-arguments-threshold = 5
+type-complexity-threshold = 200
+doc-valid-idents = ["API", "JSON", "HTTP", "DNS", "DKIM", "SMTP", "MTA", "MIME", "DNSSEC"]

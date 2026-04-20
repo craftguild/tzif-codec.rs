@@ -1,0 +1,24 @@
+# Rust build output
+/target/
+
+# Test and coverage output
+/coverage/
+*.profraw
+*.profdata
+tarpaulin-report.html
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Editor and OS files
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo
