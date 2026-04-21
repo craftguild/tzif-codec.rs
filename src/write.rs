@@ -5,13 +5,13 @@ use crate::{
 };
 
 impl TzifFile {
-    /// Serializes this file to `TZif` bytes after validating it.
+    /// Encodes this file to `TZif` bytes after validating it.
     ///
     /// # Errors
     ///
     /// Returns an error if the file is invalid or contains counts or timestamps that
     /// cannot be represented by the selected `TZif` version.
-    pub fn serialize(&self) -> Result<Vec<u8>, TzifError> {
+    pub fn to_bytes(&self) -> Result<Vec<u8>, TzifError> {
         validate_file(self)?;
         let mut out = Vec::new();
         write_header(&mut out, self.version, &self.v1)?;
@@ -28,15 +28,6 @@ impl TzifFile {
             out.push(b'\n');
         }
         Ok(out)
-    }
-
-    /// Serializes this file to `TZif` bytes.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if serialization validation fails.
-    pub fn to_bytes(&self) -> Result<Vec<u8>, TzifError> {
-        self.serialize()
     }
 }
 

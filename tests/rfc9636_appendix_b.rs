@@ -29,7 +29,7 @@ fn appendix_b1_version_1_utc_with_leap_seconds() -> TestResult {
 #[test]
 fn appendix_b2_version_2_pacific_honolulu() -> TestResult {
     let tzif = TzifFile::v2(honolulu_v1(), honolulu_v2(), "HST10");
-    let bytes = tzif.serialize().assert_ok()?;
+    let bytes = tzif.to_bytes().assert_ok()?;
 
     assert_tzif_bytes_roundtrip(&tzif, B2_HONOLULU)?;
 
@@ -57,7 +57,7 @@ fn appendix_b4_truncated_version_3_asia_jerusalem() -> TestResult {
         jerusalem_v3(),
         "IST-2IDT,M3.4.4/26,M10.5.0",
     );
-    let bytes = tzif.serialize().assert_ok()?;
+    let bytes = tzif.to_bytes().assert_ok()?;
 
     assert_tzif_bytes_roundtrip(&tzif, B4_JERUSALEM)?;
 
@@ -87,7 +87,7 @@ fn rejects_mismatched_transition_counts() -> TestResult {
     let mut block = DataBlock::placeholder();
     block.transition_times.push(0);
 
-    let err = TzifFile::v1(block).serialize().assert_err()?;
+    let err = TzifFile::v1(block).to_bytes().assert_err()?;
     assert_eq!(
         err.to_string(),
         "transition_types has 0 entries, but expected 1"
@@ -97,15 +97,13 @@ fn rejects_mismatched_transition_counts() -> TestResult {
 }
 
 #[test]
-fn parse_and_to_bytes_remain_aliases() -> TestResult {
+fn parse_and_to_bytes_roundtrip_placeholder_file() -> TestResult {
     let tzif = TzifFile::v2(DataBlock::placeholder(), DataBlock::placeholder(), "UTC0");
-    let serialized = tzif.serialize().assert_ok()?;
+    let encoded = tzif.to_bytes().assert_ok()?;
 
-    assert_eq!(tzif.to_bytes().assert_ok()?, serialized);
-    assert_eq!(
-        TzifFile::parse(&serialized).assert_ok()?,
-        TzifFile::deserialize(&serialized).assert_ok()?
-    );
+    let parsed = TzifFile::parse(&encoded).assert_ok()?;
+    assert_eq!(parsed, tzif);
+    assert_eq!(parsed.to_bytes().assert_ok()?, encoded);
 
     Ok(())
 }
@@ -120,12 +118,12 @@ const fn ltt(utc_offset: i32, is_dst: bool, designation_index: u8) -> LocalTimeT
 
 fn assert_tzif_bytes_roundtrip(tzif: &TzifFile, expected: &str) -> TestResult {
     let expected = hex(expected)?;
-    let encoded = tzif.serialize().assert_ok()?;
+    let encoded = tzif.to_bytes().assert_ok()?;
     assert_eq!(encoded, expected);
 
-    let deserialized = TzifFile::deserialize(&expected).assert_ok()?;
-    assert_eq!(deserialized.serialize().assert_ok()?, expected);
-    assert_eq!(deserialized, *tzif);
+    let parsed = TzifFile::parse(&expected).assert_ok()?;
+    assert_eq!(parsed.to_bytes().assert_ok()?, expected);
+    assert_eq!(parsed, *tzif);
     Ok(())
 }
 

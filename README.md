@@ -1,6 +1,6 @@
 # tzif-codec
 
-`tzif-codec` is a small Rust crate for serializing, deserializing, validating,
+`tzif-codec` is a small Rust crate for parsing, encoding, validating,
 and building TZif files as specified by RFC 9636.
 
 The crate keeps its data model close to the binary TZif layout. It is intended
@@ -9,8 +9,8 @@ round-trip TZif data for use with timezone libraries such as Jiff.
 
 ## Scope
 
-- TZif v1, v2, v3, and v4 deserialization
-- TZif v1, v2, v3, and v4 serialization
+- TZif v1, v2, v3, and v4 parsing
+- TZif v1, v2, v3, and v4 encoding
 - Transition times and transition type indexes
 - Local time type records
 - Time zone designation tables
@@ -69,17 +69,47 @@ let tzif = TzifBuilder::transitions()
     ))
     .build()?;
 
-let bytes = tzif.serialize()?;
-let deserialized = TzifFile::deserialize(&bytes)?;
-assert_eq!(deserialized.serialize()?, bytes);
+let bytes = tzif.to_bytes()?;
+let parsed = TzifFile::parse(&bytes)?;
+assert_eq!(parsed.to_bytes()?, bytes);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
+
+### Round-Trip Existing Zoneinfo
+
+Linux systems usually install compiled IANA time zone files under
+`/usr/share/zoneinfo`. These files are already TZif, so they can be parsed,
+encoded again, written somewhere else, and compared byte-for-byte:
+
+```rust,no_run
+use std::{env, fs, path::Path};
+use tzif_codec::TzifFile;
+
+let source = Path::new("/usr/share/zoneinfo/Asia/Tokyo");
+let output = env::temp_dir().join("Asia_Tokyo.tzif");
+
+let original = fs::read(source)?;
+let parsed = TzifFile::parse(&original)?;
+let encoded = parsed.to_bytes()?;
+fs::write(&output, &encoded)?;
+
+let written = fs::read(&output)?;
+assert_eq!(written.len(), original.len());
+for (offset, (&expected, &actual)) in original.iter().zip(&written).enumerate() {
+    assert_eq!(actual, expected, "byte mismatch at offset {offset}");
+}
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The TZif header contains 15 reserved bytes. Conforming TZif files write these
+bytes as zero, and this crate also writes zeros when encoding, so standard
+zoneinfo files are expected to round-trip byte-for-byte.
 
 ## Validation
 
 `TzifFile` and `DataBlock` are low-level, mutable representations of the wire
 format. Callers that construct or edit them directly can validate RFC 9636
-constraints without serializing first:
+constraints without encoding first:
 
 ```rust
 use tzif_codec::{DataBlock, TzifFile};
@@ -89,7 +119,7 @@ tzif.validate()?;
 # Ok::<(), tzif_codec::TzifError>(())
 ```
 
-`serialize()`, `deserialize()`, `validate_for_media_type()`,
+`to_bytes()`, `parse()`, `validate_for_media_type()`,
 `validate_tzdist_truncation()`, and interoperability warnings also run the same
 structural validation before using a file.
 
@@ -140,11 +170,11 @@ assert_eq!(eastern.footer.as_deref(), Some("EST5EDT,M3.2.0,M11.1.0"));
 
 Raw footer strings remain available through `.footer(...)` for unusual cases
 that the structured `PosixFooter` API does not yet cover. Raw footers are
-validated when the resulting `TzifFile` is validated or serialized.
+validated when the resulting `TzifFile` is validated or encoded.
 
 Builder designations are always validated as RFC 9636 designations: ASCII only,
 `[A-Za-z0-9+-]`, and 3 to 6 characters. This keeps `build()` from returning a
-`TzifFile` that later fails serialization because of designation table data.
+`TzifFile` that later fails encoding because of designation table data.
 
 ## Interoperability Warnings
 
@@ -253,7 +283,7 @@ fn custom_office_zone() -> Result<Vec<u8>, StatusCode> {
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     tzif.validate_for_media_type(TzifMediaType::Tzif)
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    tzif.serialize()
+    tzif.to_bytes()
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
 }
 ```
@@ -273,12 +303,12 @@ The test suite includes byte-for-byte RFC 9636 Appendix B examples:
 - B.4 Truncated Version 3 File Representing Asia/Jerusalem
 - B.5 Truncated Version 4 File Representing Europe/London
 
-Each vector is generated from the Rust data model, deserialized back, and
-serialized again with byte-for-byte equality.
+Each vector is generated from the Rust data model, parsed back, and
+encoded again with byte-for-byte equality.
 
 ## Test Strategy
 
-The crate includes unit tests for builders, deserialization, serialization,
+The crate includes unit tests for builders, parsing, encoding,
 validation, interoperability warnings, TZDIST helpers, and RFC 9636 Appendix B
 byte vectors.
 

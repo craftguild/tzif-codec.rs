@@ -5,13 +5,13 @@ use crate::{
 };
 
 impl TzifFile {
-    /// Deserializes a `TZif` byte slice into a validated file.
+    /// Parses a `TZif` byte slice into a validated file.
     ///
     /// # Errors
     ///
     /// Returns an error if the input is malformed, truncated, has invalid counts or
     /// indexes, or fails semantic validation.
-    pub fn deserialize(input: &[u8]) -> Result<Self, TzifError> {
+    pub fn parse(input: &[u8]) -> Result<Self, TzifError> {
         let mut reader = Reader::new(input);
         let first = reader.read_header()?;
         let v1 = reader.read_data_block(&first, TimeSize::ThirtyTwo)?;
@@ -40,15 +40,6 @@ impl TzifFile {
         };
         validate_file(&file)?;
         Ok(file)
-    }
-
-    /// Parses a `TZif` byte slice into a validated file.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the input cannot be deserialized as valid `TZif`.
-    pub fn parse(input: &[u8]) -> Result<Self, TzifError> {
-        Self::deserialize(input)
     }
 }
 

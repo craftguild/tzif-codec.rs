@@ -1,8 +1,8 @@
-//! Serializer and deserializer for the Time Zone Information Format (`TZif`).
+//! Encoder and parser for the Time Zone Information Format (`TZif`).
 //!
 //! This crate focuses on the RFC 9636 binary interchange format. It keeps the
 //! data model close to the on-the-wire layout so callers can build, inspect,
-//! deserialize, and serialize `TZif` files without pulling in a timezone engine.
+//! parse, and encode `TZif` files without pulling in a timezone engine.
 //!
 //! ```compile_fail
 //! let _ = tzif_codec::APPLICATION_TZIF;
