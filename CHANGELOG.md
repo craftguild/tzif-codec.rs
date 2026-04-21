@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/craftguild/tzif-codec/compare/v0.1.1...v0.1.2) - 2026-04-21
+
+### Fixed
+
+- satisfy clippy in leap second security tests
+
+### Other
+
+- rename TZif parse and encode APIs
+
 ## [0.1.1](https://github.com/craftguild/tzif-codec/compare/v0.1.0...v0.1.1) - 2026-04-20
 
 ### Other
