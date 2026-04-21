@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix readme references
 
-## [0.1.2](https://github.com/craftguild/tzif-codec/compare/v0.1.1...v0.1.2) - 2026-04-21
+## [0.1.2](https://github.com/craftguild/tzif-codec.rs/compare/v0.1.1...v0.1.2) - 2026-04-21
 
 ### Fixed
 
@@ -23,13 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - rename TZif parse and encode APIs
 
-## [0.1.1](https://github.com/craftguild/tzif-codec/compare/v0.1.0...v0.1.1) - 2026-04-20
+## [0.1.1](https://github.com/craftguild/tzif-codec.rs/compare/v0.1.0...v0.1.1) - 2026-04-20
 
 ### Other
 
 - enable release-plz releases
 
-## [0.1.0](https://github.com/craftguild/tzif-codec/releases/tag/v0.1.0) - 2026-04-20
+## [0.1.0](https://github.com/craftguild/tzif-codec.rs/releases/tag/v0.1.0) - 2026-04-20
 
 ### Other
 

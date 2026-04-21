@@ -7,7 +7,7 @@ authors = ["The tzif-codec authors"]
 license = "MIT"
 description = "Codec, validator, and builder for RFC 9636 TZif files"
 readme = "README.md"
-repository = "https://github.com/craftguild/tzif-codec"
+repository = "https://github.com/craftguild/tzif-codec.rs"
 
 [lints.rust]
 unsafe_code = "deny"
