@@ -1,4 +1,4 @@
-# tzif-codec
+# tzif-codec.rs
 
 `tzif-codec` is a small Rust crate for parsing, encoding, validating,
 and building TZif files as specified by RFC 9636.
@@ -334,4 +334,4 @@ See `CONTRIBUTING.md`.
 
 ## License
 
-See `LICENSE.md`.
+See `LICENSE`.
